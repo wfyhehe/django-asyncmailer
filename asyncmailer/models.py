@@ -52,19 +52,19 @@ class Provider(models.Model):
                               use_tls=self.use_tls)
 
     def send(self, address, title, content, html_message=None):
-        with self.get_connection() as connection:
-            msg = EmailMultiAlternatives(
-                title,
-                content,
-                self.from_address,
-                [address],
-                connection=connection
-            )
-            msg.attach_alternative(
-                html_message,
-                "text/html"
-            )
-            msg.send()
+        msg = EmailMultiAlternatives(
+            title,
+            content,
+            self.from_address,
+            [address],
+            connection=self.get_connection()
+        )
+        msg.attach_alternative(
+            html_message,
+            "text/html"
+        )
+        msg.send()
+        msg.connection.close()
         self.add_usage()
 
     def can_send(self, address):
