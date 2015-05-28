@@ -62,7 +62,7 @@ class ProviderTest(TestCase):
         Test if the provider works with usage counting
         """
         pre_usage = self.test_provider.usage
-        self.test_provider.send("test@example.com", "Test", "Test")
+        self.test_provider.send("test@example.com", "Test", "Test", html_message="<html></html>")
         post_usage = self.test_provider.usage
         self.assertEqual(post_usage - pre_usage, 1)
         
