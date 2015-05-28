@@ -1,7 +1,8 @@
 from django.db import models
-from django.core.mail import get_connection, send_mail
+from django.core.mail import get_connection, send_mail, EmailMultiAlternatives
 from jsonfield import JSONField
 import re
+from django import get_version
 
 # Create your models here.
 
@@ -51,7 +52,19 @@ class Provider(models.Model):
                               use_tls=self.use_tls)
 
     def send(self, address, title, content, html_message=None):
-        send_mail(title, content, self.from_address, [address], html_message=html_message, connection=self.get_conection(), fail_silently=False)
+        with self.get_connection() as connection:
+            msg = EmailMultiAlternatives(
+                title,
+                content,
+                self.from_address,
+                [address],
+                connection=connection
+            )
+            msg.attach_alternative(
+                html_message,
+                "text/html"
+            )
+            msg.send()
         self.add_usage()
 
     def can_send(self, address):
@@ -63,7 +76,3 @@ class Provider(models.Model):
         if suffix in self.blacklist:
             return False
         return True
-
-
-
-

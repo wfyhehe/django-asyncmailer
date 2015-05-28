@@ -2,6 +2,7 @@ from celery import shared_task
 from django.template.loader import render_to_string
 from django.core.mail import send_mail
 from django.conf import settings
+
 from celery.schedules import crontab
 from celery.task import periodic_task
 from asyncmailer.models import Provider
