@@ -44,7 +44,7 @@ class Provider(models.Model):
     def __unicode__(self):
         return self.__str__()
 
-    def get_conection(self):
+    def get_connection(self):
         return get_connection(host=self.smtp_host,
                               port=self.smtp_port,
                               username=self.smtp_username,
