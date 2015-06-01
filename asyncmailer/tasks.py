@@ -25,13 +25,16 @@ def async_render_and_send(email, title, context_dict=None, template='asyncmailer
     random.choice(top_providers).send(email, title, plain_text, html_message=rich_text)
 
 
-@shared_task
-def async_mail(email, title, context_dict=None, template='asyncmailer/email.html', template_plaintext='asyncmailer/email_pt.html'):
-    if len(email) == 1:
-        async_render_and_send(email[0], title, context_dict=context_dict, template=template, template_plaintext=template_plaintext)
-    else:
-        for address in email:
-            async_render_and_send(address, title, context_dict=context_dict[address], template=template, template_plaintext=template_plaintext)
+@shared_task(default_retry_delay=5, max_retries=3)
+def async_mail(email, title, context_dict=None, template='asyncmailer/email.html', template_plaintext='asyncmailer/email_pt.html', **kwargs):
+    try:
+        if len(email) == 1:
+            async_render_and_send(email[0], title, context_dict=context_dict, template=template, template_plaintext=template_plaintext)
+        else:
+            for address in email:
+                async_render_and_send(address, title, context_dict=context_dict[address], template=template, template_plaintext=template_plaintext)
+    except Exception as exc:
+        raise async_mail.retry(exc=exc)
 
 
 @periodic_task(run_every=crontab(hour=0, minute=0))
