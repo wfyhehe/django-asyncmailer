@@ -5,6 +5,7 @@ from distutils.core import Command
 with open(os.path.join(os.path.dirname(__file__), 'README.md')) as readme:
     README = readme.read()
 
+
 class TestCommand(Command):
     user_options = []
 
@@ -16,9 +17,12 @@ class TestCommand(Command):
 
     def run(self):
         from django.conf import settings
-        settings.configure(DATABASES={'default': {'NAME': ':memory:',
-            'ENGINE': 'django.db.backends.sqlite3'}},
-            INSTALLED_APPS=('asyncmailer',))
+
+        settings.configure(DATABASES={
+            'default': {'NAME': ':memory:',
+                        'ENGINE': 'django.db.backends.sqlite3'
+                        }},
+                           INSTALLED_APPS=('asyncmailer',))
         from django.core.management import call_command
         import django
 
@@ -31,7 +35,7 @@ os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
 setup(
     name='django-asyncmailer',
-    version='0.4',
+    version='0.5.0',
     packages=['asyncmailer'],
     include_package_data=True,
     license='MIT License',  # example license
@@ -44,7 +48,7 @@ setup(
         'Environment :: Web Environment',
         'Framework :: Django',
         'Intended Audience :: Developers',
-        'License :: OSI Approved :: MIT License', # example license
+        'License :: OSI Approved :: MIT License',  # example license
         'Operating System :: OS Independent',
         'Programming Language :: Python',
         # Replace these appropriately if you are stuck on Python 2.
