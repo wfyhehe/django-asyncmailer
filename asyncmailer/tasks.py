@@ -6,20 +6,23 @@ from asyncmailer.models import Provider
 import random
 
 
-# do not use this function in the wild!
 @shared_task(default_retry_delay=5, max_retries=3)
-def async_render_and_send(email, title, plain_text, rich_text):
+def async_select_and_send(email, title, plain_text, rich_text, html_only=False, **kwargs):
     try:
         providers = Provider.objects.all()
         good_providers = sorted([x for x in providers if x.can_send(email)], key=lambda p: p.can_send, reverse=True)
         top_preference = good_providers[0].preference
         top_providers = [provider for provider in good_providers if provider.preference == top_preference]
-        random.choice(top_providers).send(email, title, plain_text, html_message=rich_text)
+        selected_provider = random.choice(top_providers)
+        if html_only:
+            selected_provider.send(email, title, rich_text, html_only=True)
+        else:
+            selected_provider.send(email, title, plain_text, html_message=rich_text)
     except Exception as exc:
-        raise async_mail.retry(exc=exc)
+        raise async_select_and_send.retry(exc=exc)
 
 
-def async_mail(email, title, context_dict=None, template='asyncmailer/email.html', template_plaintext='asyncmailer/email_pt.html', **kwargs):
+def async_mail(email, title, context_dict=None, template='asyncmailer/email.html', template_plaintext='asyncmailer/email_pt.html'):
     if len(email) == 1:
         if context_dict:
             rich_text = render_to_string(template, context_dict)
@@ -27,7 +30,7 @@ def async_mail(email, title, context_dict=None, template='asyncmailer/email.html
         else:
             rich_text = render_to_string(template)
             plain_text = render_to_string(template_plaintext)
-        async_render_and_send.delay(email[0], title, plain_text, rich_text)
+        async_select_and_send.delay(email[0], title, plain_text, rich_text)
     else:
         for address in email:
             async_mail(email, title, context_dict[address], template, template_plaintext)

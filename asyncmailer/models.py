@@ -1,5 +1,5 @@
 from django.db import models
-from django.core.mail import get_connection, send_mail, EmailMultiAlternatives
+from django.core.mail import get_connection, send_mail, EmailMultiAlternatives, EmailMessage
 from jsonfield import JSONField
 import re
 from django import get_version
@@ -51,18 +51,22 @@ class Provider(models.Model):
                               password=self.smtp_password,
                               use_tls=self.use_tls)
 
-    def send(self, address, title, content, html_message=None):
-        msg = EmailMultiAlternatives(
-            title,
-            content,
-            self.from_address,
-            [address],
-            connection=self.get_connection()
-        )
-        msg.attach_alternative(
-            html_message,
-            "text/html"
-        )
+    def send(self, address, title, content, html_message=None, html_only=False):
+        if html_only:
+            msg = EmailMessage(title, content, self.from_address, [address], connection=self.get_connection())
+            msg.content_subtype = "html"
+        else:
+            msg = EmailMultiAlternatives(
+                title,
+                content,
+                self.from_address,
+                [address],
+                connection=self.get_connection()
+            )
+            msg.attach_alternative(
+                html_message,
+                "text/html"
+            )
         msg.send()
         msg.connection.close()
         self.add_usage()
