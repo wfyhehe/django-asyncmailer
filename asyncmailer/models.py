@@ -1,10 +1,45 @@
 from django.db import models
-from django.core.mail import get_connection, send_mail, EmailMultiAlternatives, EmailMessage
+from django.core.mail import get_connection, EmailMultiAlternatives, EmailMessage
 from jsonfield import JSONField
+from django.template import Template, Context
 import re
-from django import get_version
 
-# Create your models here.
+
+class DeferredMail(models.Model):
+    template = models.ForeignKey('EmailTemplate')
+    context = JSONField()
+    email = models.EmailField()
+    title = models.CharField(max_length=255)
+    key = models.CharField(max_length=100, db_index=True, default='##default_key##')
+    schedule_time = models.DateTimeField()
+
+    def __str__(self):
+        return "%s, %s" % (self.email, self.subject)
+
+    def __unicode__(self):
+        return self.__str__()
+
+    @classmethod
+    def remove_by(cls, key):
+        cls.objects.filter(key=key).delete()
+
+
+class EmailTemplate(models.Model):
+    name = models.SlugField()
+    html_content = models.TextField()
+    text_content = models.TextField()
+
+    def __str__(self):
+        return self.name
+
+    def __unicode__(self):
+        return self.__str__()
+
+    def render(self, context):
+        html_template = Template(self.html_content)
+        text_template = Template(self.text_content)
+        return html_template.render(Context(context)), text_template.render(Context(context))
+
 
 class Provider(models.Model):
 

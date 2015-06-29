@@ -2,7 +2,8 @@ from celery import shared_task
 from django.template.loader import render_to_string
 from celery.schedules import crontab
 from celery.task import periodic_task
-from asyncmailer.models import Provider
+from django.utils import timezone
+from asyncmailer.models import Provider, EmailTemplate, DeferredMail
 import random
 
 
@@ -36,6 +37,36 @@ def async_mail(email, title, context_dict=None, template='asyncmailer/email.html
             async_mail(email, title, context_dict[address], template, template_plaintext)
 
 
+def add_deferred_mail(email, title, template_name, key, delta, context_dict=None):
+    now = timezone.now()
+    schedule_time = now + delta
+    template = EmailTemplate.object.get(name=template_name)
+    m = DeferredMail(
+        template=template,
+        context=context_dict,
+        email=email,
+        title=title,
+        key=key,
+        schedule_time=schedule_time
+    )
+    m.save()
+
+
+def remove_deferred_mail(key):
+    DeferredMail.remove_by(key)
+
+
+@periodic_task(run_every=crontab(minute=10))
+def send_deferred_mails():
+    for mail in DeferredMail.objects.filter(schedule_time__lt=timezone.now()):
+        html_content, text_content = mail.template.render(mail.context)
+        async_select_and_send.delay(mail.email,
+                                    mail.title,
+                                    text_content,
+                                    html_content)
+        mail.delete()
+
+
 
 @periodic_task(run_every=crontab(hour=0, minute=0))
 def clear_daily_usages():
@@ -49,3 +80,4 @@ def clear_monthly_usages():
     providers = Provider.objects.filter(quota_type_is_daily=False)
     for p in providers:
         p.reset_usage()
+
