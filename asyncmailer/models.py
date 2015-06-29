@@ -14,7 +14,7 @@ class DeferredMail(models.Model):
     schedule_time = models.DateTimeField()
 
     def __str__(self):
-        return "%s, %s" % (self.email, self.subject)
+        return "%s, %s" % (self.email, self.title)
 
     def __unicode__(self):
         return self.__str__()
