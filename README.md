@@ -1,4 +1,5 @@
 # django-asyncmailer 
+![Logo](http://andyfangdz.github.io/django-asyncmailer/logo.png)
 # [![Build Status](https://travis-ci.org/andyfangdz/django-asyncmailer.svg?branch=master)](https://travis-ci.org/andyfangdz/django-asyncmailer)[![Coverage Status](https://coveralls.io/repos/andyfangdz/django-asyncmailer/badge.svg)](https://coveralls.io/r/andyfangdz/django-asyncmailer)[![PyPI version](https://badge.fury.io/py/django-asyncmailer.svg)](http://badge.fury.io/py/django-asyncmailer)[![PyPI Daily Download](https://img.shields.io/pypi/dd/django-asyncmailer.svg)](https://pypi.python.org/pypi/django-asyncmailer)[![PyPI Weekly Download](https://img.shields.io/pypi/dw/django-asyncmailer.svg)](https://pypi.python.org/pypi/django-asyncmailer)[![PyPI Monthly Download](https://img.shields.io/pypi/dm/django-asyncmailer.svg)](https://pypi.python.org/pypi/django-asyncmailer)[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/andyfangdz/django-asyncmailer/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
 - Asynchronous email sending with celery
 - Manage multiple SMTP credentials(providers)
