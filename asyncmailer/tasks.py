@@ -40,7 +40,7 @@ def async_mail(email, title, context_dict=None, template='asyncmailer/email.html
 def add_deferred_mail(email, title, template_name, key, delta, context_dict=None):
     now = timezone.now()
     schedule_time = now + delta
-    template = EmailTemplate.object.get(name=template_name)
+    template = EmailTemplate.objects.get(name=template_name)
     m = DeferredMail(
         template=template,
         context=context_dict,

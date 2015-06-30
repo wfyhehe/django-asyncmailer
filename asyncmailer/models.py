@@ -7,7 +7,7 @@ import re
 
 class DeferredMail(models.Model):
     template = models.ForeignKey('EmailTemplate')
-    context = JSONField()
+    context = JSONField(blank=True, null=True)
     email = models.EmailField()
     title = models.CharField(max_length=255)
     key = models.CharField(max_length=100, db_index=True, default='##default_key##')
