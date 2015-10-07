@@ -34,7 +34,7 @@ def async_mail(email, title, context_dict=None, template='asyncmailer/email.html
         async_select_and_send.delay(email[0], title, plain_text, rich_text)
     else:
         for address in email:
-            async_mail(email, title, context_dict[address], template, template_plaintext)
+            async_mail(address, title, context_dict[address], template, template_plaintext)
 
 
 def add_deferred_mail(email, title, template_name, key, delta, context_dict=None):
