@@ -38,20 +38,19 @@ setup(
     version='0.6.5',
     packages=['asyncmailer'],
     include_package_data=True,
-    license='MIT License',  # example license
-    description='Async email solution w/ multiple SMTP credentials, load-balancing and blacklist.',
+    license='MIT License',
+    description='An async email sending solution with load balancing and routing among multiple SMTP credentials',
     long_description=README,
-    url='https://github.com/yzmtf2008/django-asyncmailer',
+    url='https://github.com/andyfangdz/django-asyncmailer',
     author='Andy Fang',
     author_email='andyfang.dz@gmail.com',
     classifiers=[
         'Environment :: Web Environment',
         'Framework :: Django',
         'Intended Audience :: Developers',
-        'License :: OSI Approved :: MIT License',  # example license
+        'License :: OSI Approved :: MIT License',
         'Operating System :: OS Independent',
         'Programming Language :: Python',
-        # Replace these appropriately if you are stuck on Python 2.
         'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
