@@ -4,40 +4,39 @@ from celery.schedules import crontab
 from celery.task import periodic_task
 from django.utils import timezone
 from asyncmailer.models import Provider, EmailTemplate, DeferredMail
+import html2text
 import random
 
 
 @shared_task(default_retry_delay=5, max_retries=3)
-def async_select_and_send(email, title, plain_text, rich_text, html_only=False, **kwargs):
+def async_select_and_send(email, title, plain_text, rich_text=None, **kwargs):
     try:
         providers = Provider.objects.all()
-        good_providers = sorted([x for x in providers if x.can_send(email)], key=lambda p: p.can_send, reverse=True)
+        good_providers = sorted([x for x in providers if x.can_send(email)],
+                                key=lambda p: p.can_send, reverse=True)
         top_preference = good_providers[0].preference
-        top_providers = [provider for provider in good_providers if provider.preference == top_preference]
+        top_providers = [provider for provider in good_providers if
+                         provider.preference == top_preference]
         selected_provider = random.choice(top_providers)
-        if html_only:
-            selected_provider.send(email, title, rich_text, html_only=True)
-        else:
-            selected_provider.send(email, title, plain_text, html_message=rich_text)
+        selected_provider.send(email, title, plain_text, rich_text)
     except Exception as exc:
         raise async_select_and_send.retry(exc=exc)
 
 
-def async_mail(email, title, context_dict=None, template='asyncmailer/email.html', template_plaintext='asyncmailer/email_pt.html'):
+def async_mail(email, title, context_dict=None,
+               template='email-templates/email.html'):
     if len(email) == 1:
-        if context_dict:
-            rich_text = render_to_string(template, context_dict)
-            plain_text = render_to_string(template_plaintext, context_dict)
-        else:
-            rich_text = render_to_string(template)
-            plain_text = render_to_string(template_plaintext)
+        rich_text = render_to_string(template, context_dict)
+        plain_text = html2text.html2text(rich_text)
         async_select_and_send.delay(email[0], title, plain_text, rich_text)
     else:
         for address in email:
-            async_mail(address, title, context_dict[address], template, template_plaintext)
+            async_mail(address, title, context_dict=context_dict[address],
+                       template=template)
 
 
-def add_deferred_mail(email, title, template_name, key, delta, context_dict=None):
+def add_deferred_mail(email, title, template_name, key, delta,
+                      context_dict=None):
     now = timezone.now()
     schedule_time = now + delta
     template = EmailTemplate.objects.get(name=template_name)
@@ -67,7 +66,6 @@ def send_deferred_mails():
         mail.delete()
 
 
-
 @periodic_task(run_every=crontab(hour=0, minute=0))
 def clear_daily_usages():
     providers = Provider.objects.filter(quota_type_is_daily=True)
@@ -80,4 +78,3 @@ def clear_monthly_usages():
     providers = Provider.objects.filter(quota_type_is_daily=False)
     for p in providers:
         p.reset_usage()
-
